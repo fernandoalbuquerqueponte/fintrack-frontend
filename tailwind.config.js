@@ -23,6 +23,9 @@ export default {
         primary: {
           DEFAULT: 'var(--primary)',
           foreground: 'var(--primary-foreground)',
+          red: 'hsl(var(--primary-red))',
+          green: 'hsl(var(--primary-green))',
+          blue: 'hsl(var(--primary-blue))',
         },
         secondary: {
           DEFAULT: 'var(--secondary)',
