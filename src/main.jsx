@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { Route, Routes } from 'react-router'
 import { BrowserRouter } from 'react-router-dom'
 
+import { Toaster } from './components/ui/sonner'
 import HomePage from './pages/home.jsx'
 import LoginPage from './pages/login.jsx'
 import NotFoundPage from './pages/not-found.jsx'
@@ -24,6 +25,7 @@ createRoot(document.getElementById('root')).render(
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
+      <Toaster />
     </QueryClientProvider>
   </StrictMode>
 )

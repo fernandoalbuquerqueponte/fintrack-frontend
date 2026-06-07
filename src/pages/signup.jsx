@@ -1,6 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useMutation } from '@tanstack/react-query'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 import PasswordInput from '@/components/password-input'
@@ -23,33 +26,62 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { api } from '@/lib/axios'
 
-const signupSchema = z.object({
-  firstName: z.string().trim().min(1, { message: 'O nome é obrigatório' }),
-  lastName: z.string().trim().min(1, { message: 'O sobrenome é obrigatório' }),
-  email: z
-    .string()
-    .email({ message: 'E-mail inválido' })
-    .trim()
-    .min(1, { message: 'O e-mail é obrigatório' }),
-  password: z
-    .string()
-    .trim()
-    .min(6, { message: 'A senha deve conter no mínimo 6 caracteres' }),
-  confirmPassword: z.string().trim().min(6, {
-    message: 'A confirmação de senha deve conter no mínimo 6 caracteres',
-  }),
-  terms: z.boolean().refine((value) => value === true, {
-    message: 'Você deve aceitar os termos de uso e política de privacidade',
-  }),
-})
+const signupSchema = z
+  .object({
+    first_name: z.string().trim().min(1, { message: 'O nome é obrigatório' }),
+    last_name: z
+      .string()
+      .trim()
+      .min(1, { message: 'O sobrenome é obrigatório' }),
+    email: z
+      .string()
+      .email({ message: 'E-mail inválido' })
+      .trim()
+      .min(1, { message: 'O e-mail é obrigatório' }),
+    password: z
+      .string()
+      .trim()
+      .min(6, { message: 'A senha deve conter no mínimo 6 caracteres' }),
+    confirmPassword: z.string().trim().min(6, {
+      message: 'A confirmação de senha deve conter no mínimo 6 caracteres',
+    }),
+    terms: z.boolean().refine((value) => value === true, {
+      message: 'Você deve aceitar os termos de uso e política de privacidade',
+    }),
+  })
+  .refine(
+    (data) => {
+      return data.password === data.confirmPassword
+    },
+    {
+      message: 'As senhas não coincidem',
+      path: ['confirmPassword'],
+    }
+  )
 
 const SignupPage = () => {
+  const [user, setUser] = useState(null)
+
+  const signupMutation = useMutation({
+    mutationKey: ['signup'],
+    mutationFn: async (variables) => {
+      const response = await api.post('/users', {
+        first_name: variables.first_name,
+        last_name: variables.last_name,
+        email: variables.email,
+        password: variables.password,
+      })
+      return response.data
+    },
+  })
+
   const methods = useForm({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
+      first_name: '',
+      last_name: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -58,7 +90,25 @@ const SignupPage = () => {
   })
 
   const handleSubmit = (data) => {
-    console.log(data)
+    signupMutation.mutate(data, {
+      onSuccess: (createdUser) => {
+        const accessToken = createdUser.tokens.accessToken
+        const refreshToken = createdUser.tokens.refreshToken
+
+        localStorage.setItem('accessToken', accessToken)
+        localStorage.setItem('refreshToken', refreshToken)
+        setUser(createdUser)
+
+        toast.success('Conta criada com sucesso!')
+      },
+      onError: () => {
+        toast.error('Erro ao criar conta. Por favor, tente novamente.')
+      },
+    })
+  }
+
+  if (user) {
+    return <h1>Olá {user.first_name}</h1>
   }
 
   return (
@@ -75,7 +125,7 @@ const SignupPage = () => {
             <CardContent className="space-y-4">
               <FormField
                 control={methods.control}
-                name="firstName"
+                name="first_name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nome</FormLabel>
@@ -89,7 +139,7 @@ const SignupPage = () => {
 
               <FormField
                 control={methods.control}
-                name="lastName"
+                name="last_name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Sobrenome</FormLabel>
