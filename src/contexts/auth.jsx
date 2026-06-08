@@ -26,6 +26,17 @@ export const AuthContextProvider = ({ children }) => {
     },
   })
 
+  const signinMutation = useMutation({
+    mutationKey: ['login'],
+    mutationFn: async (data) => {
+      const response = await api.post('/users/login', {
+        email: data.email,
+        password: data.password,
+      })
+      return response.data
+    },
+  })
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -71,12 +82,31 @@ export const AuthContextProvider = ({ children }) => {
     })
   }
 
+  const login = (data) => {
+    signinMutation.mutate(data, {
+      onSuccess: (loggedUser) => {
+        const accessToken = loggedUser.tokens.accessToken
+        const refreshToken = loggedUser.tokens.refreshToken
+
+        localStorage.setItem('accessToken', accessToken)
+        localStorage.setItem('refreshToken', refreshToken)
+        setUser(loggedUser)
+        toast.success('Login realizado com sucesso!')
+      },
+      onError: () => {
+        toast.error(
+          'Ocorreu um erro ao fazer login. Verifique suas credenciais e tente novamente.'
+        )
+      },
+    })
+  }
+
   return (
     <AuthContext.Provider
       value={{
-        user: user,
-        login: () => {},
-        signup: signup,
+        user,
+        login,
+        signup,
       }}
     >
       {children}
