@@ -15,7 +15,7 @@ import BalanceItem from './balance-item'
 const Balance = () => {
   const [searchParams] = useSearchParams()
   const { user } = useAuthContext()
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['balance', user.id],
     queryFn: () => {
       const from = searchParams.get('from')
@@ -23,6 +23,10 @@ const Balance = () => {
       return UserService.getBalance({ from, to })
     },
   })
+
+  if (isLoading || !data) {
+    return <div>Carregando saldos...</div>
+  }
 
   return (
     <div className="grid grid-cols-2 grid-rows-2 gap-6">
