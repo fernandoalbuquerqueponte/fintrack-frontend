@@ -1,7 +1,5 @@
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { Loader2Icon } from 'lucide-react'
 import { Link, Navigate } from 'react-router'
-import { z } from 'zod'
 
 import PasswordInput from '@/components/password-input'
 import { Button } from '@/components/ui/button'
@@ -23,28 +21,11 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { useAuthContext } from '@/contexts/auth'
-
-const signinSchema = z.object({
-  email: z
-    .string()
-    .email({ message: 'E-mail inválido' })
-    .trim()
-    .min(1, { message: 'O e-mail é obrigatório' }),
-  password: z
-    .string()
-    .trim()
-    .min(6, { message: 'A senha deve conter no mínimo 6 caracteres' }),
-})
+import { useLoginForm } from '@/forms/hooks/user'
 
 const LoginPage = () => {
   const { user, login, isInitializing } = useAuthContext()
-  const methods = useForm({
-    resolver: zodResolver(signinSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  })
+  const { form } = useLoginForm()
 
   const handleSubmit = (data) => {
     login(data)
@@ -58,8 +39,8 @@ const LoginPage = () => {
 
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-3">
-      <Form {...methods}>
-        <form onSubmit={methods.handleSubmit(handleSubmit)}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)}>
           <Card className="w-[500px]">
             <CardHeader>
               <CardTitle>Faça Login</CardTitle>
@@ -69,7 +50,7 @@ const LoginPage = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField
-                control={methods.control}
+                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
@@ -82,7 +63,7 @@ const LoginPage = () => {
                 )}
               />
               <FormField
-                control={methods.control}
+                control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem>
@@ -99,7 +80,12 @@ const LoginPage = () => {
               />
             </CardContent>
             <CardFooter>
-              <Button className="w-full">Criar conta</Button>
+              <Button className="w-full" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting && (
+                  <Loader2Icon className="animate-spin" />
+                )}
+                Fazer login
+              </Button>
             </CardFooter>
           </Card>
         </form>
