@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import {
   PiggyBankIcon,
   TrendingDownIcon,
@@ -7,24 +6,15 @@ import {
 } from 'lucide-react'
 import { useSearchParams } from 'react-router'
 
-import { useAuthContext } from '@/contexts/auth'
-import { UserService } from '@/services/user'
+import { useGetUserBalance } from '@/api/hooks/user'
 
 import BalanceItem from './balance-item'
 
 const Balance = () => {
   const [searchParams] = useSearchParams()
-  const { user } = useAuthContext()
   const from = searchParams.get('from')
   const to = searchParams.get('to')
-  const { data, isLoading } = useQuery({
-    queryKey: ['balance', user.id, from, to],
-    queryFn: () => {
-      return UserService.getBalance({ from, to })
-    },
-    staleTime: 1000 * 60 * 5,
-    enabled: Boolean(from) && Boolean(to) && Boolean(user.id),
-  })
+  const { data, isLoading } = useGetUserBalance({ from, to })
 
   if (isLoading || !data) {
     return <div>Carregando saldos...</div>
