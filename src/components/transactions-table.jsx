@@ -9,6 +9,7 @@ import { formatCurrency } from '@/helpers/currency'
 import TransactionTypeBadge from './transaction-type-badge'
 import { Button } from './ui/button'
 import { DataTable } from './ui/data-table'
+import { ScrollArea } from './ui/scroll-area'
 
 export const columns = [
   {
@@ -60,7 +61,14 @@ const TransactionsTable = () => {
 
   if (!transactions) return null
 
-  return <DataTable columns={columns} data={transactions} />
+  return (
+    <>
+      <h2 className="text-2xl font-bold">Transações</h2>
+      <ScrollArea className="max-h-[500px] rounded-md border">
+        <DataTable columns={columns} data={transactions} />
+      </ScrollArea>
+    </>
+  )
 }
 
 export default TransactionsTable
